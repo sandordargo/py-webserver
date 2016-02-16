@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 #from database import database_operations as database_operations
 from database import database_operations
 app = Flask(__name__)
@@ -9,6 +9,9 @@ app = Flask(__name__)
 def list_menu_items(restaurant_id):
     menu_items = database_operations.list_menu_items(restaurant_id)
     html_to_print = ''
+    return render_template('menu.html',
+                           restaurant=database_operations.get_restaurant(restaurant_id),
+                           items=menu_items)
     for item in menu_items:
         html_to_print += '<p>{}</br>{}</br>{}</p>'.format(item.name, item.price, item.description)
     return html_to_print

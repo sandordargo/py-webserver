@@ -23,10 +23,6 @@ def list_all_restaurants():
     session = init_connection()
     query_results = session.query(Restaurant).all()
     return query_results
-    list_of_restaurants = list()
-    for result in query_results:
-        list_of_restaurants.append(result.name)
-    return list_of_restaurants
 
 
 def insert_restaurant(resraurant_name):
@@ -55,3 +51,10 @@ def list_menu_items(i_restaurant_id=1):
     session = init_connection()
     query_results = session.query(MenuItem).filter(MenuItem.restaurant_id == i_restaurant_id)
     return query_results
+
+
+def get_restaurant(restaurant_id):
+    session = init_connection()
+    restaurant = session.query(Restaurant).filter(Restaurant.id == restaurant_id).one()
+    return restaurant
+
