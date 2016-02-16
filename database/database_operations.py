@@ -4,7 +4,7 @@ from database_setup import Base, Restaurant, MenuItem
 
 
 def init_connection():
-    engine = create_engine('sqlite:///restaurantmenu.db')
+    engine = create_engine('sqlite:///database/restaurantmenu.db')
     Base.metadata.bind=engine
     DBSession = sessionmaker(bind=engine)
     session = DBSession()

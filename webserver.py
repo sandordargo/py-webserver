@@ -1,7 +1,7 @@
 from __future__ import print_function
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import cgi
-import database_operations
+import database.database_operations as database_operations
 from urlparse import parse_qs
 import re
 
