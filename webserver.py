@@ -2,11 +2,10 @@ from __future__ import print_function
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import cgi
 import database.database_operations as database_operations
-from urlparse import parse_qs
 import re
 
-class WebServerHandler(BaseHTTPRequestHandler):
 
+class WebServerHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         edit_pattern = re.compile(r'/restaurants/(?P<id>(?:\d+))/edit')
@@ -15,30 +14,9 @@ class WebServerHandler(BaseHTTPRequestHandler):
         delete_pattern = re.compile(r'/restaurants/(?P<id>(?:\d+))/delete')
         delete_match = delete_pattern.search(self.path)
 
-        if self.path.endswith("/hello"):
+        if self.path.endswith('/restaurants'):
             self.set_successful_response(200)
-            message = ""
-            message += "<html><body>"
-            message += "<h1>Hello!</h1>"
-            message += '''<form method='POST' enctype='multipart/form-data' action='/hello'>
-                <h2>What would you like me to say?</h2><input name="message" type="text" >
-                <input type="submit" value="Submit"> </form>'''
-            message += "</body></html>"
-            self.wfile.write(message)
-            print(message)
-            return
-
-        elif self.path.endswith("/hola"):
-            self.set_successful_response(200)
-            message = ""
-            message += "<html><body> &#161 Hola ! <a href='/hello'>Back to hello</a></body></html>"
-            self.wfile.write(message)
-            print(message)
-            return
-
-        elif self.path.endswith('/restaurants'):
-            self.set_successful_response(200)
-            message = self.get_all_restos()
+            message = self.get_all_restaurants()
             message += "</br></br><a href='/restaurants/new'>Create a new restaurant</a>"
             message += "</body></html>"
             self.wfile.write(message)
@@ -106,16 +84,6 @@ class WebServerHandler(BaseHTTPRequestHandler):
                     messagecontent = fields.get('new_restaurant_name')
                     print(messagecontent)
                     database_operations.insert_restaurant(str(messagecontent[0]))
-                elif self.path.endswith('/hello'):
-                    self.set_successful_response(301)
-                    messagecontent = fields.get('message')
-                    output += "<html><body>"
-                    output += " <h2> Okay, how about this: </h2>"
-                    output += "<h1> {} </h1>".format(messagecontent[0])
-                    output += '''<form method='POST' enctype='multipart/form-data' action='/hello'>
-                        <h2>What would you like me to say?</h2>
-                        <input name="message" type="text" ><input type="submit" value="Submit"> </form>'''
-                    output += "</body></html>"
                 elif edit_match:
                     self.set_successful_response(301, '/restaurants')
                     print('resto changed')
@@ -126,13 +94,10 @@ class WebServerHandler(BaseHTTPRequestHandler):
                     self.set_successful_response(301, '/restaurants')
                     print('resto deleted')
                     database_operations.delete_restaurant(delete_match.group(1))
-
-
             self.wfile.write(output)
             print(output)
         except:
             pass
-
 
     def set_successful_response(self, status_id, location=None):
         self.send_response(status_id)
@@ -141,7 +106,8 @@ class WebServerHandler(BaseHTTPRequestHandler):
             self.send_header('Location', location)
         self.end_headers()
 
-    def get_all_restos(self):
+    @staticmethod
+    def get_all_restaurants():
         message = ''
         message += '<html><body> List of all restaurants: </body></html>'
         for restaurant in database_operations.list_all_restaurants():

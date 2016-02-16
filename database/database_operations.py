@@ -25,9 +25,9 @@ def list_all_restaurants():
     return query_results
 
 
-def insert_restaurant(resraurant_name):
+def insert_restaurant(restaurant_name):
     session = init_connection()
-    new_restaurant = Restaurant(name=resraurant_name)
+    new_restaurant = Restaurant(name=restaurant_name)
     session.add(new_restaurant)
     session.commit()
 
