@@ -32,6 +32,14 @@ def insert_restaurant(restaurant_name):
     session.commit()
 
 
+def insert_menu_item(name, description, price, course, restaurant_id):
+    session = init_connection()
+    new_menu_item= MenuItem(name=name, description=description,
+                            price=price, course=course, restaurant_id=restaurant_id)
+    session.add(new_menu_item)
+    session.commit()
+
+
 def edit_restaurant(restaurant_id, restaurant_name):
     session = init_connection()
     restaurant_to_update = session.query(Restaurant).filter(Restaurant.id == restaurant_id).one()
@@ -46,6 +54,12 @@ def delete_restaurant(restaurant_id):
     session.delete(restaurant_to_delete)
     session.commit()
 
+def delete_menu_item(menu_item_id):
+    session = init_connection()
+    menu_item_to_delete = session.query(MenuItem).filter(MenuItem.id == menu_item_id).one()
+    session.delete(menu_item_to_delete)
+    session.commit()
+
 
 def list_menu_items(i_restaurant_id=1):
     session = init_connection()
@@ -57,4 +71,20 @@ def get_restaurant(restaurant_id):
     session = init_connection()
     restaurant = session.query(Restaurant).filter(Restaurant.id == restaurant_id).one()
     return restaurant
+
+
+def get_menu_item(item_id):
+    session = init_connection()
+    item = session.query(MenuItem).filter(MenuItem.id == item_id).one()
+    return item
+
+
+def update_menu_item(menu_id, name='', description='', price=0):
+    session = init_connection()
+    item_to_edit = session.query(MenuItem).filter_by(id=menu_id).one()
+    item_to_edit.name = name if name else item_to_edit.name
+    item_to_edit.description = description if description else item_to_edit.description
+    item_to_edit.price = price if price else item_to_edit.price
+    session.add(item_to_edit)
+    session.commit()
 
