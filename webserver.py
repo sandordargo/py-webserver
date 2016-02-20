@@ -110,7 +110,7 @@ class WebServerHandler(BaseHTTPRequestHandler):
     def get_all_restaurants():
         message = ''
         message += '<html><body> List of all restaurants: </body></html>'
-        for restaurant in database_operations.list_all_restaurants():
+        for restaurant in database_operations.get_all_restaurants():
             message += '''<p>{} <a href='restaurants/{}/edit'>Edit</a> <a href='restaurants/{}/delete'>Delete</a></p>'''.format(restaurant.name, restaurant.id, restaurant.id)
         return message
 

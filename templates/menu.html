@@ -5,7 +5,8 @@
     <body>
         <div class = 'pane'>
             <div class = 'header'>
-            <h1>{{ restaurant.name }}</h1>
+                <h1>{{ restaurant.name }}</h1>
+            </div>
         </div>
         {% with messages=get_flashed_messages() %}
             {% if messages %}
@@ -23,11 +24,11 @@
                 {{i.name}}</br>
                 {{i.description}}</br>
                 {{i.price}}</br>
-                <a href="{{ url_for('editMenuItem', restaurant_id=restaurant.id, menu_id=i.id) }}">Edit</a></br>
-                <a href="{{ url_for('deleteMenuItem', restaurant_id=restaurant.id, menu_id=i.id) }}">Delete</a></br>
+                <a href="{{ url_for('edit_menu_item', restaurant_id=restaurant.id, menu_id=i.id) }}">Edit</a></br>
+                <a href="{{ url_for('delete_menu_item', restaurant_id=restaurant.id, menu_id=i.id) }}">Delete</a></br>
             </p>
         </div>
         {% endfor %}
-        <a href = '{{url_for('newMenuItem', restaurant_id = restaurant.id) }}'>Create New Item</a>
+        <a href = '{{url_for('add_new_menu_item', restaurant_id = restaurant.id) }}'>Create New Item</a>
     </body>
 </html>
