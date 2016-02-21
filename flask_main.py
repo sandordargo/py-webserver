@@ -98,6 +98,13 @@ def gconnect():
     login_session['username'] = data['name']
     login_session['picture'] = data['picture']
     login_session['email'] = data['email']
+    if not database_operations.get_user_id(data['email']):
+        print data['email']
+        login_session['user_id'] = database_operations.add_user(user_name=data['name'],
+                                                                email_address=data['email'],
+                                                                picture=data['picture'])
+    else:
+        login_session['user_id'] = database_operations.get_user_id(data['email'])
     login_session['access_token'] = credentials.access_token
 
     output = ''
@@ -158,7 +165,9 @@ def edit_restaurant(restaurant_id):
     if 'username' not in login_session:
         return redirect(url_for('show_login'))
     if request.method == 'POST':
-        database_operations.update_restaurant(restaurant_id, request.form['name'])
+        database_operations.update_restaurant(restaurant_id=restaurant_id,
+                                              restaurant_name=request.form['name'],
+                                              user_id=login_session['user_id'])
         flash("Restaurant has been updated!")
         return redirect(url_for('list_restaurants'))
     else:
@@ -167,6 +176,8 @@ def edit_restaurant(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/delete/',  methods=['GET', 'POST'])
 def delete_restaurant(restaurant_id):
+    if 'username' not in login_session:
+        return redirect(url_for('show_login'))
     if request.method == 'POST':
         database_operations.delete_restaurant(restaurant_id)
         flash("Restaurant item has been deleted!")
@@ -178,15 +189,27 @@ def delete_restaurant(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/')
 def list_menu_items(restaurant_id):
-    return render_template('menu.html',
-                           restaurant=database_operations.get_restaurant(restaurant_id),
-                           items=database_operations.get_menu_items_for_restaurant(restaurant_id))
+    creator = database_operations.get_user(restaurant_id)
+    if creator.id == login_session['user_id']:
+        print 'private'
+        return render_template('menu.html',
+                               restaurant=database_operations.get_restaurant(restaurant_id),
+                               items=database_operations.get_menu_items_for_restaurant(restaurant_id))
+    else:
+        print 'public'
+        return render_template('public_menu.html',
+                               items = database_operations.get_menu_items_for_restaurant(restaurant_id),
+                               restaurant = database_operations.get_restaurant(restaurant_id),
+                               creator= creator)
 
 
 @app.route('/restaurants/new/', methods=['GET', 'POST'])
 def add_new_restaurant():
+    if 'username' not in login_session:
+        return redirect(url_for('show_login'))
     if request.method == 'POST':
-        database_operations.insert_restaurant(restaurant_name=request.form['name'])
+        database_operations.insert_restaurant(restaurant_name=request.form['name'],
+                                              user_id=login_session['user_id'])
         flash("New restaurant has been created!")
         return redirect(url_for('list_restaurants'))
     else:
@@ -195,12 +218,15 @@ def add_new_restaurant():
 
 @app.route('/restaurants/<int:restaurant_id>/new/', methods=['GET', 'POST'])
 def add_new_menu_item(restaurant_id):
+    if 'username' not in login_session:
+        return redirect(url_for('show_login'))
     if request.method == 'POST':
         database_operations.insert_menu_item(name=request.form['name'],
                                              description=request.form['description'],
                                              price=request.form['price'],
                                              course=request.form['course'],
-                                             restaurant_id=restaurant_id)
+                                             restaurant_id=restaurant_id,
+                                             user_id=login_session['user_id'])
         flash("New menu item has been created!")
         return redirect(url_for('list_menu_items', restaurant_id=restaurant_id))
     else:
@@ -209,9 +235,17 @@ def add_new_menu_item(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/<int:menu_id>/edit/',  methods=['GET', 'POST'])
 def edit_menu_item(restaurant_id, menu_id):
+    if 'username' not in login_session:
+        return redirect(url_for('show_login'))
+    if database_operations.get_user(restaurant_id).id != login_session['user_id']:
+        flash("You don't have the permission to edit this menu item")
+        return redirect(url_for('list_menu_items', restaurant_id=restaurant_id))
     if request.method == 'POST':
-        database_operations.update_menu_item(menu_id, request.form['name'],
-                                             request.form['description'], request.form['price'])
+        database_operations.update_menu_item(menu_id=menu_id,
+                                             name=request.form['name'],
+                                             description=request.form['description'],
+                                             price=request.form['price'],
+                                             user_id=login_session['user_id'])
         flash("Menu item has been updated!")
         return redirect(url_for('list_menu_items', restaurant_id=restaurant_id))
     else:
@@ -219,8 +253,13 @@ def edit_menu_item(restaurant_id, menu_id):
                                item=database_operations.get_menu_item(menu_id))
 
 
-@app.route('/restaurants/<int:restaurant_id>>/<int:menu_id>/delete/',  methods=['GET', 'POST'])
+@app.route('/restaurants/<int:restaurant_id>/<int:menu_id>/delete/',  methods=['GET', 'POST'])
 def delete_menu_item(restaurant_id, menu_id):
+    if 'username' not in login_session:
+        return redirect(url_for('show_login'))
+    if database_operations.get_user(restaurant_id).id != login_session['user_id']:
+        return "<script>function myFunction() {alert('You are not authorized to delete this item');} </script>" \
+               "<body onload='myFunction()'>"
     if request.method == 'POST':
         database_operations.delete_menu_item(menu_id)
         flash("Menu item has been deleted!")
