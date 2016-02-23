@@ -3,6 +3,13 @@ from sqlalchemy.orm import sessionmaker, exc
 from database_setup import Base, Restaurant, MenuItem, User
 
 
+def query_single_item(session, db_object, filter_column, filter_value):
+    try:
+        return session.query(db_object).filter(filter_column == filter_value).one()
+    except exc.NoResultFound:
+        return None
+
+
 def init_connection():
     engine = create_engine('sqlite:///database/restaurantmenuwithusers.db')
     Base.metadata.bind = engine
@@ -72,8 +79,10 @@ def delete_menu_item(menu_item_id):
 
 def get_menu_items_for_restaurant(i_restaurant_id=1):
     session = init_connection()
-    query_results = session.query(MenuItem).filter(MenuItem.restaurant_id == i_restaurant_id)
-    return query_results
+    try:
+        return session.query(MenuItem).filter(MenuItem.restaurant_id == i_restaurant_id)
+    except exc.NoResultFound:
+        return None
 
 
 def get_menu_item(item_id):
@@ -104,8 +113,10 @@ def add_user(user_name, email_address, picture):
 
 def get_user(user_id):
     session = init_connection()
-    query_results = session.query(User).filter(User.id == user_id).one()
-    return query_results
+    print user_id
+    return query_single_item(session, User, User.id, user_id)
+    # query_results = session.query(User).filter(User.id == user_id).one()
+    # return query_results
 
 
 def get_user_id(email):

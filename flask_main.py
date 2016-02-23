@@ -283,13 +283,19 @@ def delete_restaurant(restaurant_id):
 
 @app.route('/restaurants/<int:restaurant_id>/')
 def list_menu_items(restaurant_id):
-    creator = database_operations.get_user(restaurant_id)
+    creator = database_operations.get_user(database_operations.get_restaurant(restaurant_id).user_id)
     if creator.id == login_session['user_id']:
+        if not database_operations.get_menu_items_for_restaurant(restaurant_id):
+            flash("{} has no menu yet, please add an item!".format(database_operations.get_restaurant(restaurant_id).name))
+            return redirect(url_for('add_new_menu_item', restaurant_id=restaurant_id))
         print 'private'
         return render_template('menu.html',
                                restaurant=database_operations.get_restaurant(restaurant_id),
                                items=database_operations.get_menu_items_for_restaurant(restaurant_id))
     else:
+        if not database_operations.get_menu_items_for_restaurant(restaurant_id):
+            flash("{} has no menu yet!".format(database_operations.get_restaurant(restaurant_id).name))
+            return redirect(url_for('list_restaurants'))
         print 'public'
         return render_template('public_menu.html',
                                items = database_operations.get_menu_items_for_restaurant(restaurant_id),
@@ -331,7 +337,7 @@ def add_new_menu_item(restaurant_id):
 def edit_menu_item(restaurant_id, menu_id):
     if 'username' not in login_session:
         return redirect(url_for('show_login'))
-    if database_operations.get_user(restaurant_id).id != login_session['user_id']:
+    if database_operations.get_user(database_operations.get_restaurant(restaurant_id).user_id).id != login_session['user_id']:
         flash("You don't have the permission to edit this menu item")
         return redirect(url_for('list_menu_items', restaurant_id=restaurant_id))
     if request.method == 'POST':
@@ -351,7 +357,7 @@ def edit_menu_item(restaurant_id, menu_id):
 def delete_menu_item(restaurant_id, menu_id):
     if 'username' not in login_session:
         return redirect(url_for('show_login'))
-    if database_operations.get_user(restaurant_id).id != login_session['user_id']:
+    if database_operations.get_user(database_operations.get_restaurant(restaurant_id).user_id).id != login_session['user_id']:
         return "<script>function myFunction() {alert('You are not authorized to delete this item');} </script>" \
                "<body onload='myFunction()'>"
     if request.method == 'POST':
