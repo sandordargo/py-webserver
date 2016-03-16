@@ -284,6 +284,12 @@ def delete_restaurant(restaurant_id):
 @app.route('/restaurants/<int:restaurant_id>/')
 def list_menu_items(restaurant_id):
     creator = database_operations.get_user(database_operations.get_restaurant(restaurant_id).user_id)
+    if 'user_id' not in login_session:
+        print 'public'
+        return render_template('public_menu.html',
+                               items = database_operations.get_menu_items_for_restaurant(restaurant_id),
+                               restaurant = database_operations.get_restaurant(restaurant_id),
+                               creator= creator)
     if creator.id == login_session['user_id']:
         if not database_operations.get_menu_items_for_restaurant(restaurant_id):
             flash("{} has no menu yet, please add an item!".format(database_operations.get_restaurant(restaurant_id).name))
